@@ -199,6 +199,7 @@ function isPhotoVisible(index) {
             show = !selection.ampliacion && !selection.impresion && !selection.redes_sociales && !selection.invitacion && !selection.descartada;
             break;
     }
+    console.log(`isPhotoVisible(index: ${index}, currentFilter: ${currentFilter}) => ${show}`);
     return show;
 }
 
@@ -212,6 +213,7 @@ function applyFilter() {
 }
 
 function setFilter(filter) {
+    console.log('Setting filter to:', filter);
     currentFilter = filter;
     applyFilter();
 
@@ -265,6 +267,7 @@ function findNextVisiblePhoto(startIndex, direction) {
 // MODAL FUNCTIONS
 // ========================================
 function openModal(index) {
+    console.log(`Opening modal for index: ${index}, currentFilter: ${currentFilter}`);
     currentPhotoIndex = index;
     const modal = document.getElementById('photoModal');
     const modalImage = document.getElementById('modalImage');
@@ -332,10 +335,12 @@ function hasUnsavedChanges() {
 }
 
 function navigatePhoto(direction) {
+    console.log(`Navigating photo: ${direction}`);
     if (currentPhotoIndex === null) return;
 
     const proceed = () => {
         const newIndex = findNextVisiblePhoto(currentPhotoIndex, direction);
+        console.log(`findNextVisiblePhoto returned: ${newIndex}`);
 
         if (newIndex !== null) {
             currentPhotoIndex = newIndex;
