@@ -8,6 +8,7 @@ const photos = Array.from({length: 87}, (_, i) => `images/foto${String(i + 1).pa
 const LIMITS = {
     impresion: 50,    // Máximo 50 fotos para impresión
     ampliacion: 1     // Máximo 1 foto para ampliación
+    // redes_sociales: sin límite
 };
 
 const STORAGE_KEY = 'renata_xv_photo_selections';
@@ -60,6 +61,7 @@ function getStats() {
         ampliacion: 0,
         impresion: 0,
         invitacion: 0,
+        redes_sociales: 0,
         descartada: 0,
         sinClasificar: photos.length
     };
@@ -68,6 +70,7 @@ function getStats() {
         if (selection.ampliacion) stats.ampliacion++;
         if (selection.impresion) stats.impresion++;
         if (selection.invitacion) stats.invitacion++;
+        if (selection.redes_sociales) stats.redes_sociales++;
         if (selection.descartada) stats.descartada++;
     });
 
@@ -81,7 +84,7 @@ function updateStats() {
 
     document.getElementById('countAmpliacion').textContent = stats.ampliacion;
     document.getElementById('countImpresion').textContent = stats.impresion;
-    document.getElementById('countInvitacion').textContent = stats.invitacion;
+    document.getElementById('countRedesSociales').textContent = stats.redes_sociales;
     document.getElementById('countDescartada').textContent = stats.descartada;
     document.getElementById('countSinClasificar').textContent = stats.sinClasificar;
 }
@@ -95,7 +98,7 @@ function renderGallery() {
 
     photos.forEach((photo, index) => {
         const selection = photoSelections[index] || {};
-        const hasAny = selection.ampliacion || selection.impresion || selection.invitacion || selection.descartada;
+        const hasAny = selection.ampliacion || selection.impresion || selection.invitacion || selection.redes_sociales || selection.descartada;
 
         const card = document.createElement('div');
         card.className = 'photo-card';
@@ -109,6 +112,7 @@ function renderGallery() {
             if (selection.ampliacion) categories.push('ampliacion');
             if (selection.impresion) categories.push('impresion');
             if (selection.invitacion) categories.push('invitacion');
+            if (selection.redes_sociales) categories.push('redes_sociales');
 
             if (categories.length > 1) {
                 card.classList.add('has-multiple');
@@ -123,6 +127,7 @@ function renderGallery() {
             badgesHTML = '<div class="photo-badges">';
             if (selection.ampliacion) badgesHTML += '<span class="badge badge-ampliacion">🖼️ Ampliación</span>';
             if (selection.impresion) badgesHTML += '<span class="badge badge-impresion">📸 Impresión</span>';
+            if (selection.redes_sociales) badgesHTML += '<span class="badge badge-redes-sociales">📱 Redes Sociales</span>';
             if (selection.invitacion) badgesHTML += '<span class="badge badge-invitacion">💌 Invitación</span>';
             if (selection.descartada) badgesHTML += '<span class="badge badge-descartada">❌ Descartada</span>';
             badgesHTML += '</div>';
@@ -164,6 +169,9 @@ function applyFilter() {
             case 'impresion':
                 show = selection.impresion === true;
                 break;
+            case 'redes-sociales':
+                show = selection.redes_sociales === true;
+                break;
             case 'invitacion':
                 show = selection.invitacion === true;
                 break;
@@ -171,7 +179,7 @@ function applyFilter() {
                 show = selection.descartada === true;
                 break;
             case 'sin-clasificar':
-                show = !selection.ampliacion && !selection.impresion && !selection.invitacion && !selection.descartada;
+                show = !selection.ampliacion && !selection.impresion && !selection.redes_sociales && !selection.invitacion && !selection.descartada;
                 break;
         }
 
@@ -200,6 +208,7 @@ function updateFilterButtons() {
     document.getElementById('btnFilterAll').textContent = `Todas (${photos.length})`;
     document.getElementById('btnFilterAmpliacion').textContent = `Ampliación (${stats.ampliacion}/${LIMITS.ampliacion})`;
     document.getElementById('btnFilterImpresion').textContent = `Impresión (${stats.impresion}/${LIMITS.impresion})`;
+    document.getElementById('btnFilterRedesSociales').textContent = `Redes Sociales (${stats.redes_sociales})`;
     // Hide invitacion button
     const invitacionBtn = document.getElementById('btnFilterInvitacion');
     if (invitacionBtn) invitacionBtn.style.display = 'none';
@@ -280,12 +289,13 @@ function exportToJSON() {
 
     photos.forEach((photo, index) => {
         const selection = photoSelections[index];
-        if (selection && (selection.ampliacion || selection.impresion || selection.invitacion || selection.descartada)) {
+        if (selection && (selection.ampliacion || selection.impresion || selection.redes_sociales || selection.invitacion || selection.descartada)) {
             exportData.selecciones.push({
                 numero_foto: index + 1,
                 archivo: photo,
                 ampliacion: selection.ampliacion || false,
                 impresion: selection.impresion || false,
+                redes_sociales: selection.redes_sociales || false,
                 invitacion: selection.invitacion || false,
                 descartada: selection.descartada || false
             });
@@ -311,14 +321,16 @@ function generateTextSummary() {
     summary += `   Total de fotos: ${photos.length}\n`;
     summary += `   🖼️  Para ampliación: ${stats.ampliacion}\n`;
     summary += `   📸 Para impresión: ${stats.impresion}\n`;
+    summary += `   📱 Para redes sociales: ${stats.redes_sociales}\n`;
     summary += `   💌 Para invitación: ${stats.invitacion}\n`;
     summary += `   ❌ Descartadas: ${stats.descartada}\n`;
     summary += `   ⭕ Sin clasificar: ${stats.sinClasificar}\n\n`;
 
-    const categories = ['ampliacion', 'impresion', 'invitacion', 'descartada'];
+    const categories = ['ampliacion', 'impresion', 'redes_sociales', 'invitacion', 'descartada'];
     const categoryNames = {
         ampliacion: '🖼️  AMPLIACIÓN',
         impresion: '📸 IMPRESIÓN',
+        redes_sociales: '📱 REDES SOCIALES',
         invitacion: '💌 INVITACIÓN',
         descartada: '❌ DESCARTADAS'
     };
@@ -400,6 +412,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnFilterAll').addEventListener('click', () => setFilter('all'));
     document.getElementById('btnFilterAmpliacion').addEventListener('click', () => setFilter('ampliacion'));
     document.getElementById('btnFilterImpresion').addEventListener('click', () => setFilter('impresion'));
+    document.getElementById('btnFilterRedesSociales').addEventListener('click', () => setFilter('redes-sociales'));
     document.getElementById('btnFilterInvitacion').addEventListener('click', () => setFilter('invitacion'));
     document.getElementById('btnFilterDescartada').addEventListener('click', () => setFilter('descartada'));
     document.getElementById('btnFilterSinClasificar').addEventListener('click', () => setFilter('sin-clasificar'));
@@ -408,6 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnFilterAll').dataset.filter = 'all';
     document.getElementById('btnFilterAmpliacion').dataset.filter = 'ampliacion';
     document.getElementById('btnFilterImpresion').dataset.filter = 'impresion';
+    document.getElementById('btnFilterRedesSociales').dataset.filter = 'redes-sociales';
     document.getElementById('btnFilterInvitacion').dataset.filter = 'invitacion';
     document.getElementById('btnFilterDescartada').dataset.filter = 'descartada';
     document.getElementById('btnFilterSinClasificar').dataset.filter = 'sin-clasificar';
