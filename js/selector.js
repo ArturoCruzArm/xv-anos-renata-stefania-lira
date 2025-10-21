@@ -1,29 +1,16 @@
 // ========================================
 // GLOBAL VARIABLES
 // ========================================
-const photos = [
-    'images/foto7_0001.jpg', 'images/foto7_0002.jpg', 'images/foto7_0003.jpg',
-    'images/foto7_0004.jpg', 'images/foto7_0005.jpg', 'images/foto7_0006.jpg',
-    'images/foto7_0007.jpg', 'images/foto7_0008.jpg', 'images/foto7_0009.jpg',
-    'images/foto7_0010.jpg', 'images/foto7_0011.jpg', 'images/foto7_0012.jpg',
-    'images/foto7_0013.jpg', 'images/foto7_0014.jpg', 'images/foto7_0015.jpg',
-    'images/foto7_0016.jpg', 'images/foto7_0017.jpg', 'images/foto7_0018.jpg',
-    'images/foto7_0019.jpg', 'images/foto7_0020.jpg', 'images/foto7_0021.jpg',
-    'images/foto7_0022.jpg', 'images/foto7_0023.jpg', 'images/foto7_0024.jpg',
-    'images/foto7_0025.jpg', 'images/foto7_0026.jpg', 'images/foto7_0027.jpg',
-    'images/foto7_0028.jpg', 'images/foto7_0029.jpg', 'images/foto7_0030.jpg',
-    'images/foto7_0031.jpg', 'images/foto7_0032.jpg', 'images/foto7_0033.jpg',
-    'images/foto7_0034.jpg', 'images/foto7_0035.jpg', 'images/foto7_0036.jpg',
-    'images/foto7_0037.jpg', 'images/foto7_0038.jpg', 'images/foto7_0039.jpg',
-    'images/foto7_0040.jpg', 'images/foto7_0041.jpg', 'images/foto7_0042.jpg',
-    'images/foto7_0043.jpg', 'images/foto7_0044.jpg', 'images/foto7_0045.jpg',
-    'images/foto7_0046.jpg', 'images/foto7_0047.jpg', 'images/foto7_0048.jpg',
-    'images/foto7_0049.jpg', 'images/foto7_0050.jpg', 'images/foto7_0051.jpg',
-    'images/foto7_0052.jpg', 'images/foto7_0053.jpg', 'images/foto7_0054.jpg',
-    'images/foto7_0055.jpg', 'images/foto7_0056.jpg', 'images/foto7_0057.jpg'
-];
+// Generate photo paths for 87 photos
+const photos = Array.from({length: 87}, (_, i) => `images/foto${String(i + 1).padStart(4, '0')}.webp`);
 
-const STORAGE_KEY = 'jadelik_xv_photo_selections';
+// LIMITS FOR RENATA'S PACKAGE
+const LIMITS = {
+    impresion: 50,    // Máximo 50 fotos para impresión
+    ampliacion: 1     // Máximo 1 foto para ampliación
+};
+
+const STORAGE_KEY = 'renata_xv_photo_selections';
 let photoSelections = {};
 let currentPhotoIndex = null;
 let currentFilter = 'all';
@@ -211,9 +198,11 @@ function updateFilterButtons() {
     const stats = getStats();
 
     document.getElementById('btnFilterAll').textContent = `Todas (${photos.length})`;
-    document.getElementById('btnFilterAmpliacion').textContent = `Ampliación (${stats.ampliacion})`;
-    document.getElementById('btnFilterImpresion').textContent = `Impresión (${stats.impresion})`;
-    document.getElementById('btnFilterInvitacion').textContent = `Invitación (${stats.invitacion})`;
+    document.getElementById('btnFilterAmpliacion').textContent = `Ampliación (${stats.ampliacion}/${LIMITS.ampliacion})`;
+    document.getElementById('btnFilterImpresion').textContent = `Impresión (${stats.impresion}/${LIMITS.impresion})`;
+    // Hide invitacion button
+    const invitacionBtn = document.getElementById('btnFilterInvitacion');
+    if (invitacionBtn) invitacionBtn.style.display = 'none';
     document.getElementById('btnFilterDescartada').textContent = `Descartadas (${stats.descartada})`;
     document.getElementById('btnFilterSinClasificar').textContent = `Sin Clasificar (${stats.sinClasificar})`;
 }
@@ -436,9 +425,43 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnCancelSelection').addEventListener('click', closeModal);
     document.getElementById('btnSaveSelection').addEventListener('click', saveModalSelection);
 
-    // Option buttons
+    // Option buttons with limit validation
     document.querySelectorAll('.option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            const category = btn.dataset.category;
+            const isCurrentlySelected = btn.classList.contains('selected');
+
+            // Skip invitacion - not available for Renata
+            if (category === 'invitacion') {
+                showToast('La opción de invitación no está disponible para este paquete', 'error');
+                return;
+            }
+
+            // If trying to select (not deselect), check limits
+            if (!isCurrentlySelected && LIMITS[category]) {
+                const stats = getStats();
+                if (stats[category] >= LIMITS[category]) {
+                    const messages = {
+                        impresion: `Ya has seleccionado el máximo de ${LIMITS.impresion} fotos para impresión`,
+                        ampliacion: `Ya has seleccionado el máximo de ${LIMITS.ampliacion} foto para ampliación`
+                    };
+                    showToast(messages[category], 'error');
+                    return;
+                }
+            }
+
+            // If selecting descartada, deselect all others
+            if (category === 'descartada' && !isCurrentlySelected) {
+                document.querySelectorAll('.option-btn').forEach(b => {
+                    if (b !== btn) b.classList.remove('selected');
+                });
+            }
+
+            // If selecting any other, deselect descartada
+            if (category !== 'descartada' && !isCurrentlySelected) {
+                document.querySelector('.option-btn[data-category="descartada"]').classList.remove('selected');
+            }
+
             btn.classList.toggle('selected');
         });
     });
