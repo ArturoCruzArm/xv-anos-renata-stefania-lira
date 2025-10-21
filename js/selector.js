@@ -302,10 +302,16 @@ function saveModalSelection() {
 // ========================================
 function exportToJSON() {
     const exportData = {
+        INSTRUCCIONES: '⚠️ IMPORTANTE: Por favor envía este archivo por WhatsApp al 4779203776',
+        whatsapp: '4779203776',
         fecha_exportacion: new Date().toISOString(),
         total_fotos: photos.length,
         estadisticas: getStats(),
-        selecciones: []
+        selecciones: [],
+        sugerencias_de_cambios: {
+            video: feedbackData.video.length > 0 ? feedbackData.video : 'Sin cambios sugeridos',
+            fotos: feedbackData.photos.length > 0 ? feedbackData.photos : 'Sin cambios sugeridos'
+        }
     };
 
     photos.forEach((photo, index) => {
@@ -327,11 +333,11 @@ function exportToJSON() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `seleccion-fotos-jadelik-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `seleccion-renata-${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
 
-    showToast('Reporte descargado correctamente', 'success');
+    showToast('📥 Reporte descargado. ¡Envíalo por WhatsApp al 4779203776!', 'success');
 }
 
 function generateTextSummary() {
@@ -541,4 +547,137 @@ document.addEventListener('visibilitychange', () => {
 // ========================================
 window.addEventListener('beforeunload', (e) => {
     saveSelections();
+});
+
+// ========================================
+// FEEDBACK MANAGEMENT
+// ========================================
+const FEEDBACK_KEY = 'renata_xv_feedback';
+let feedbackData = {
+    video: [],
+    photos: []
+};
+
+// Load feedback from localStorage
+function loadFeedback() {
+    try {
+        const saved = localStorage.getItem(FEEDBACK_KEY);
+        if (saved) {
+            feedbackData = JSON.parse(saved);
+            renderFeedbackLists();
+        }
+    } catch (error) {
+        console.error('Error loading feedback:', error);
+    }
+}
+
+// Save feedback to localStorage
+function saveFeedback() {
+    try {
+        localStorage.setItem(FEEDBACK_KEY, JSON.stringify(feedbackData));
+    } catch (error) {
+        console.error('Error saving feedback:', error);
+    }
+}
+
+// Add video feedback
+function addVideoFeedback() {
+    const minute = document.getElementById('videoMinute').value.trim();
+    const change = document.getElementById('videoChange').value.trim();
+
+    if (!minute || !change) {
+        showToast('Por favor completa ambos campos', 'error');
+        return;
+    }
+
+    feedbackData.video.push({ minute, change });
+    saveFeedback();
+    renderFeedbackLists();
+
+    // Clear inputs
+    document.getElementById('videoMinute').value = '';
+    document.getElementById('videoChange').value = '';
+
+    showToast('Sugerencia de video agregada', 'success');
+}
+
+// Add photo feedback
+function addPhotoFeedback() {
+    const photoNumber = document.getElementById('photoNumber').value.trim();
+    const change = document.getElementById('photoChange').value.trim();
+
+    if (!photoNumber || !change) {
+        showToast('Por favor completa ambos campos', 'error');
+        return;
+    }
+
+    if (photoNumber < 1 || photoNumber > 87) {
+        showToast('El número de foto debe estar entre 1 y 87', 'error');
+        return;
+    }
+
+    feedbackData.photos.push({ photoNumber: parseInt(photoNumber), change });
+    saveFeedback();
+    renderFeedbackLists();
+
+    // Clear inputs
+    document.getElementById('photoNumber').value = '';
+    document.getElementById('photoChange').value = '';
+
+    showToast('Sugerencia de foto agregada', 'success');
+}
+
+// Remove video feedback
+function removeVideoFeedback(index) {
+    feedbackData.video.splice(index, 1);
+    saveFeedback();
+    renderFeedbackLists();
+    showToast('Sugerencia eliminada', 'success');
+}
+
+// Remove photo feedback
+function removePhotoFeedback(index) {
+    feedbackData.photos.splice(index, 1);
+    saveFeedback();
+    renderFeedbackLists();
+    showToast('Sugerencia eliminada', 'success');
+}
+
+// Render feedback lists
+function renderFeedbackLists() {
+    const videoList = document.getElementById('videoFeedbackList');
+    const photoList = document.getElementById('photoFeedbackList');
+
+    if (!videoList || !photoList) return;
+
+    // Render video feedback
+    if (feedbackData.video.length === 0) {
+        videoList.innerHTML = '<p style="color: #999; font-style: italic; margin: 10px 0;">No hay sugerencias de cambios en el video</p>';
+    } else {
+        videoList.innerHTML = feedbackData.video.map((item, index) => `
+            <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f5f5f5; border-radius: 8px; margin-bottom: 8px;">
+                <span style="font-weight: 600; color: #2196f3; min-width: 60px;">⏱️ ${item.minute}</span>
+                <span style="flex: 1; color: #333;">${item.change}</span>
+                <button onclick="removeVideoFeedback(${index})" style="padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">🗑️</button>
+            </div>
+        `).join('');
+    }
+
+    // Render photo feedback
+    if (feedbackData.photos.length === 0) {
+        photoList.innerHTML = '<p style="color: #999; font-style: italic; margin: 10px 0;">No hay sugerencias de cambios en las fotos</p>';
+    } else {
+        photoList.innerHTML = feedbackData.photos.map((item, index) => `
+            <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f5f5f5; border-radius: 8px; margin-bottom: 8px;">
+                <span style="font-weight: 600; color: #8b6f47; min-width: 60px;">📸 #${item.photoNumber}</span>
+                <span style="flex: 1; color: #333;">${item.change}</span>
+                <button onclick="removePhotoFeedback(${index})" style="padding: 5px 10px; background: #f44336; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem;">🗑️</button>
+            </div>
+        `).join('');
+    }
+}
+
+// Load feedback on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadFeedback();
 });
