@@ -82,11 +82,32 @@ function getStats() {
 function updateStats() {
     const stats = getStats();
 
+    // Update counters
     document.getElementById('countAmpliacion').textContent = stats.ampliacion;
     document.getElementById('countImpresion').textContent = stats.impresion;
     document.getElementById('countRedesSociales').textContent = stats.redes_sociales;
     document.getElementById('countDescartada').textContent = stats.descartada;
     document.getElementById('countSinClasificar').textContent = stats.sinClasificar;
+
+    // Add warning class if limits exceeded
+    const ampliacionCard = document.querySelector('.stat-card.ampliacion');
+    const impresionCard = document.querySelector('.stat-card.impresion');
+
+    if (ampliacionCard) {
+        if (stats.ampliacion > LIMITS.ampliacion) {
+            ampliacionCard.classList.add('exceeded');
+        } else {
+            ampliacionCard.classList.remove('exceeded');
+        }
+    }
+
+    if (impresionCard) {
+        if (stats.impresion > LIMITS.impresion) {
+            impresionCard.classList.add('exceeded');
+        } else {
+            impresionCard.classList.remove('exceeded');
+        }
+    }
 }
 
 // ========================================
@@ -439,7 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btnCancelSelection').addEventListener('click', closeModal);
     document.getElementById('btnSaveSelection').addEventListener('click', saveModalSelection);
 
-    // Option buttons with limit validation
+    // Option buttons - no restrictions, just warnings
     document.querySelectorAll('.option-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const category = btn.dataset.category;
@@ -449,19 +470,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (category === 'invitacion') {
                 showToast('La opción de invitación no está disponible para este paquete', 'error');
                 return;
-            }
-
-            // If trying to select (not deselect), check limits
-            if (!isCurrentlySelected && LIMITS[category]) {
-                const stats = getStats();
-                if (stats[category] >= LIMITS[category]) {
-                    const messages = {
-                        impresion: `Ya has seleccionado el máximo de ${LIMITS.impresion} fotos para impresión`,
-                        ampliacion: `Ya has seleccionado el máximo de ${LIMITS.ampliacion} foto para ampliación`
-                    };
-                    showToast(messages[category], 'error');
-                    return;
-                }
             }
 
             // If selecting descartada, deselect all others
@@ -477,6 +485,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             btn.classList.toggle('selected');
+
+            // Show warning if exceeding recommended limit (but allow it)
+            if (!isCurrentlySelected && LIMITS[category]) {
+                const stats = getStats();
+                // Add 1 because we're about to select this one
+                const futureCount = stats[category] + 1;
+                if (futureCount > LIMITS[category]) {
+                    const messages = {
+                        impresion: `⚠️ Nota: Has seleccionado ${futureCount} fotos para impresión (se recomiendan ${LIMITS.impresion})`,
+                        ampliacion: `⚠️ Nota: Has seleccionado ${futureCount} fotos para ampliación (se recomienda ${LIMITS.ampliacion})`
+                    };
+                    showToast(messages[category], 'warning');
+                }
+            }
         });
     });
 

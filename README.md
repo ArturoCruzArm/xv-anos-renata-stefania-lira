@@ -5,15 +5,19 @@ Selector de fotos para los XV años de Renata Stefania Lira.
 ## 📸 Características
 
 - **87 fotos** optimizadas en formato WebP (~90% reducción de tamaño)
-- Selector interactivo con límites del paquete:
-  - 🖼️ **Ampliación**: Máximo 1 foto
-  - 📸 **Impresión**: Máximo 50 fotos
+- Selector interactivo con recomendaciones del paquete:
+  - 🖼️ **Ampliación**: Se recomienda 1 foto
+  - 📸 **Impresión**: Se recomiendan 50 fotos
   - 📱 **Redes Sociales**: Sin límite (para compartir en Facebook, Instagram, etc.)
   - ❌ **Descartadas**: Sin límite
-- Filtros por categoría
+- **Sistema de advertencias**:
+  - Puedes seleccionar más fotos de las recomendadas
+  - Te avisará cuando excedas el límite recomendado
+  - Las tarjetas cambian de color cuando excedes el límite
+  - Perfecto para filtrar y descartar hasta llegar al número correcto
+- Filtros por categoría para facilitar la revisión
 - Exportación de selecciones en JSON
 - Diseño responsive y moderno
-- Validación automática de límites
 
 ## 🚀 Acceso
 
