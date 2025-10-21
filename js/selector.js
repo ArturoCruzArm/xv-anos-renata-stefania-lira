@@ -281,44 +281,92 @@ function updateNavigationButtons() {
     }
 }
 
+function hasUnsavedChanges() {
+    if (currentPhotoIndex === null) return false;
+
+    const savedSelection = photoSelections[currentPhotoIndex] || {};
+    const currentSelection = {};
+    document.querySelectorAll('.option-btn.selected').forEach(btn => {
+        currentSelection[btn.dataset.category] = true;
+    });
+
+    const savedKeys = Object.keys(savedSelection).filter(k => savedSelection[k]);
+    const currentKeys = Object.keys(currentSelection);
+
+    if (savedKeys.length !== currentKeys.length) return true;
+
+    const allKeys = new Set([...savedKeys, ...currentKeys]);
+
+    for (const key of allKeys) {
+        if (!!savedSelection[key] !== !!currentSelection[key]) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 function navigatePhoto(direction) {
     if (currentPhotoIndex === null) return;
 
-    let newIndex = currentPhotoIndex;
+    const proceed = () => {
+        let newIndex = currentPhotoIndex;
 
-    if (direction === 'prev' && currentPhotoIndex > 0) {
-        newIndex = currentPhotoIndex - 1;
-    } else if (direction === 'next' && currentPhotoIndex < photos.length - 1) {
-        newIndex = currentPhotoIndex + 1;
-    }
+        if (direction === 'prev' && currentPhotoIndex > 0) {
+            newIndex = currentPhotoIndex - 1;
+        } else if (direction === 'next' && currentPhotoIndex < photos.length - 1) {
+            newIndex = currentPhotoIndex + 1;
+        }
 
-    if (newIndex !== currentPhotoIndex) {
-        currentPhotoIndex = newIndex;
-        const modalImage = document.getElementById('modalImage');
-        const modalPhotoNumber = document.getElementById('modalPhotoNumber');
+        if (newIndex !== currentPhotoIndex) {
+            currentPhotoIndex = newIndex;
+            const modalImage = document.getElementById('modalImage');
+            const modalPhotoNumber = document.getElementById('modalPhotoNumber');
 
-        modalImage.src = photos[newIndex];
-        modalPhotoNumber.textContent = `Foto ${newIndex + 1}`;
+            modalImage.src = photos[newIndex];
+            modalPhotoNumber.textContent = `Foto ${newIndex + 1}`;
 
-        // Load selections for new photo
-        const selection = photoSelections[newIndex] || {};
-        document.querySelectorAll('.option-btn').forEach(btn => {
-            const category = btn.dataset.category;
-            btn.classList.toggle('selected', selection[category] === true);
-        });
+            const selection = photoSelections[newIndex] || {};
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                const category = btn.dataset.category;
+                btn.classList.toggle('selected', selection[category] === true);
+            });
 
-        updateNavigationButtons();
+            updateNavigationButtons();
+        }
+    };
+
+    if (hasUnsavedChanges()) {
+        if (confirm('¿Deseas guardar los cambios antes de continuar?')) {
+            saveModalSelection(proceed);
+        } else {
+            proceed();
+        }
+    } else {
+        proceed();
     }
 }
 
 function closeModal() {
-    const modal = document.getElementById('photoModal');
-    modal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-    currentPhotoIndex = null;
+    const doClose = () => {
+        const modal = document.getElementById('photoModal');
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        currentPhotoIndex = null;
+    };
+
+    if (hasUnsavedChanges()) {
+        if (confirm('¿Deseas guardar los cambios antes de salir?')) {
+            saveModalSelection(doClose);
+        } else {
+            doClose();
+        }
+    } else {
+        doClose();
+    }
 }
 
-function saveModalSelection() {
+function saveModalSelection(callback) {
     if (currentPhotoIndex === null) return;
 
     const selectedCategories = {};
@@ -343,8 +391,13 @@ function saveModalSelection() {
     renderGallery();
     updateStats();
     updateFilterButtons();
-    closeModal();
     showToast('Selección guardada correctamente', 'success');
+
+    if (callback && typeof callback === 'function') {
+        callback();
+    } else {
+        closeModal();
+    }
 }
 
 // ========================================
