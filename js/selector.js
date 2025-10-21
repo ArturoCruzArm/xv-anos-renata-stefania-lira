@@ -172,39 +172,42 @@ function renderGallery() {
 // ========================================
 // FILTER FUNCTIONS
 // ========================================
+function isPhotoVisible(index) {
+    const selection = photoSelections[index] || {};
+    let show = false;
+
+    switch (currentFilter) {
+        case 'all':
+            show = true;
+            break;
+        case 'ampliacion':
+            show = selection.ampliacion === true;
+            break;
+        case 'impresion':
+            show = selection.impresion === true;
+            break;
+        case 'redes-sociales':
+            show = selection.redes_sociales === true;
+            break;
+        case 'invitacion':
+            show = selection.invitacion === true;
+            break;
+        case 'descartada':
+            show = selection.descartada === true;
+            break;
+        case 'sin-clasificar':
+            show = !selection.ampliacion && !selection.impresion && !selection.redes_sociales && !selection.invitacion && !selection.descartada;
+            break;
+    }
+    return show;
+}
+
 function applyFilter() {
     const cards = document.querySelectorAll('.photo-card');
 
     cards.forEach(card => {
         const index = parseInt(card.dataset.index);
-        const selection = photoSelections[index] || {};
-        let show = false;
-
-        switch (currentFilter) {
-            case 'all':
-                show = true;
-                break;
-            case 'ampliacion':
-                show = selection.ampliacion === true;
-                break;
-            case 'impresion':
-                show = selection.impresion === true;
-                break;
-            case 'redes-sociales':
-                show = selection.redes_sociales === true;
-                break;
-            case 'invitacion':
-                show = selection.invitacion === true;
-                break;
-            case 'descartada':
-                show = selection.descartada === true;
-                break;
-            case 'sin-clasificar':
-                show = !selection.ampliacion && !selection.impresion && !selection.redes_sociales && !selection.invitacion && !selection.descartada;
-                break;
-        }
-
-        card.classList.toggle('hidden', !show);
+        card.classList.toggle('hidden', !isPhotoVisible(index));
     });
 }
 
@@ -235,6 +238,27 @@ function updateFilterButtons() {
     if (invitacionBtn) invitacionBtn.style.display = 'none';
     document.getElementById('btnFilterDescartada').textContent = `Descartadas (${stats.descartada})`;
     document.getElementById('btnFilterSinClasificar').textContent = `Sin Clasificar (${stats.sinClasificar})`;
+}
+
+function findNextVisiblePhoto(startIndex, direction) {
+    let newIndex = startIndex;
+    const totalPhotos = photos.length;
+
+    if (direction === 'next') {
+        for (let i = startIndex + 1; i < totalPhotos; i++) {
+            if (isPhotoVisible(i)) {
+                return i;
+            }
+        }
+    } else { // 'prev'
+        for (let i = startIndex - 1; i >= 0; i--) {
+            if (isPhotoVisible(i)) {
+                return i;
+            }
+        }
+    }
+
+    return null; // No next/prev visible photo found
 }
 
 // ========================================
@@ -269,15 +293,16 @@ function updateNavigationButtons() {
     const btnNext = document.getElementById('btnNextPhoto');
 
     if (btnPrev && btnNext) {
-        // Disable prev button on first photo
-        btnPrev.disabled = currentPhotoIndex === 0;
-        btnPrev.style.opacity = currentPhotoIndex === 0 ? '0.3' : '1';
-        btnPrev.style.cursor = currentPhotoIndex === 0 ? 'not-allowed' : 'pointer';
+        const prevIndex = findNextVisiblePhoto(currentPhotoIndex, 'prev');
+        const nextIndex = findNextVisiblePhoto(currentPhotoIndex, 'next');
 
-        // Disable next button on last photo
-        btnNext.disabled = currentPhotoIndex === photos.length - 1;
-        btnNext.style.opacity = currentPhotoIndex === photos.length - 1 ? '0.3' : '1';
-        btnNext.style.cursor = currentPhotoIndex === photos.length - 1 ? 'not-allowed' : 'pointer';
+        btnPrev.disabled = prevIndex === null;
+        btnPrev.style.opacity = prevIndex === null ? '0.3' : '1';
+        btnPrev.style.cursor = prevIndex === null ? 'not-allowed' : 'pointer';
+
+        btnNext.disabled = nextIndex === null;
+        btnNext.style.opacity = nextIndex === null ? '0.3' : '1';
+        btnNext.style.cursor = nextIndex === null ? 'not-allowed' : 'pointer';
     }
 }
 
@@ -310,15 +335,9 @@ function navigatePhoto(direction) {
     if (currentPhotoIndex === null) return;
 
     const proceed = () => {
-        let newIndex = currentPhotoIndex;
+        const newIndex = findNextVisiblePhoto(currentPhotoIndex, direction);
 
-        if (direction === 'prev' && currentPhotoIndex > 0) {
-            newIndex = currentPhotoIndex - 1;
-        } else if (direction === 'next' && currentPhotoIndex < photos.length - 1) {
-            newIndex = currentPhotoIndex + 1;
-        }
-
-        if (newIndex !== currentPhotoIndex) {
+        if (newIndex !== null) {
             currentPhotoIndex = newIndex;
             const modalImage = document.getElementById('modalImage');
             const modalPhotoNumber = document.getElementById('modalPhotoNumber');
