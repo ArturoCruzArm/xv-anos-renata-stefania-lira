@@ -257,8 +257,58 @@ function openModal(index) {
         btn.classList.toggle('selected', selection[category] === true);
     });
 
+    // Update navigation button states
+    updateNavigationButtons();
+
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+}
+
+function updateNavigationButtons() {
+    const btnPrev = document.getElementById('btnPrevPhoto');
+    const btnNext = document.getElementById('btnNextPhoto');
+
+    if (btnPrev && btnNext) {
+        // Disable prev button on first photo
+        btnPrev.disabled = currentPhotoIndex === 0;
+        btnPrev.style.opacity = currentPhotoIndex === 0 ? '0.3' : '1';
+        btnPrev.style.cursor = currentPhotoIndex === 0 ? 'not-allowed' : 'pointer';
+
+        // Disable next button on last photo
+        btnNext.disabled = currentPhotoIndex === photos.length - 1;
+        btnNext.style.opacity = currentPhotoIndex === photos.length - 1 ? '0.3' : '1';
+        btnNext.style.cursor = currentPhotoIndex === photos.length - 1 ? 'not-allowed' : 'pointer';
+    }
+}
+
+function navigatePhoto(direction) {
+    if (currentPhotoIndex === null) return;
+
+    let newIndex = currentPhotoIndex;
+
+    if (direction === 'prev' && currentPhotoIndex > 0) {
+        newIndex = currentPhotoIndex - 1;
+    } else if (direction === 'next' && currentPhotoIndex < photos.length - 1) {
+        newIndex = currentPhotoIndex + 1;
+    }
+
+    if (newIndex !== currentPhotoIndex) {
+        currentPhotoIndex = newIndex;
+        const modalImage = document.getElementById('modalImage');
+        const modalPhotoNumber = document.getElementById('modalPhotoNumber');
+
+        modalImage.src = photos[newIndex];
+        modalPhotoNumber.textContent = `Foto ${newIndex + 1}`;
+
+        // Load selections for new photo
+        const selection = photoSelections[newIndex] || {};
+        document.querySelectorAll('.option-btn').forEach(btn => {
+            const category = btn.dataset.category;
+            btn.classList.toggle('selected', selection[category] === true);
+        });
+
+        updateNavigationButtons();
+    }
 }
 
 function closeModal() {
@@ -523,9 +573,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 closeModal();
             } else if (e.key === 'Enter') {
                 saveModalSelection();
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                navigatePhoto('prev');
+            } else if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                navigatePhoto('next');
             }
         }
     });
+
+    // Navigation button click handlers
+    const btnPrevPhoto = document.getElementById('btnPrevPhoto');
+    const btnNextPhoto = document.getElementById('btnNextPhoto');
+
+    if (btnPrevPhoto) {
+        btnPrevPhoto.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigatePhoto('prev');
+        });
+    }
+
+    if (btnNextPhoto) {
+        btnNextPhoto.addEventListener('click', (e) => {
+            e.stopPropagation();
+            navigatePhoto('next');
+        });
+    }
 
     console.log('Selector de fotos inicializado');
     console.log(`Total de fotos: ${photos.length}`);
