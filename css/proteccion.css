@@ -1,0 +1,75 @@
+/* ========================================
+   PROTECCIÓN DE IMÁGENES - NO PERMITIR DESCARGA
+   ======================================== */
+
+/* Deshabilitar selección y arrastre de imágenes */
+img {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    pointer-events: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    -webkit-touch-callout: none;
+}
+
+/* Protección de contenedores de imágenes */
+.photo-image-container,
+.modal-image-container,
+.photo-card {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Capa invisible sobre las imágenes para bloquear interacción directa */
+.photo-image-container::after,
+.modal-image-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+    background: transparent;
+    z-index: 1;
+}
+
+/* Asegurar que los elementos interactivos tengan mayor z-index y pointer-events */
+.photo-number,
+.photo-badges,
+.modal-photo-number,
+.option-buttons,
+.option-btn,
+.modal-actions {
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+/* Los botones de navegación y cierre ya tienen position: absolute, solo necesitan pointer-events */
+.modal-close,
+.modal-nav,
+.modal-nav-prev,
+.modal-nav-next {
+    pointer-events: auto !important;
+    z-index: 100 !important;
+}
+
+/* Los botones normales necesitan position: relative */
+.btn {
+    position: relative;
+    z-index: 10;
+    pointer-events: auto;
+}
+
+/* Asegurar que la foto-card sea clickeable */
+.photo-card {
+    pointer-events: auto;
+}
