@@ -1,8 +1,8 @@
 // ========================================
 // GLOBAL VARIABLES
 // ========================================
-// Generate photo paths for 87 photos
-const photos = Array.from({length: 87}, (_, i) => `images/foto${String(i + 1).padStart(4, '0')}.webp`);
+// Generate photo paths for 88 photos
+const photos = Array.from({length: 88}, (_, i) => `images/foto${String(i + 1).padStart(4, '0')}.webp`);
 
 // LIMITS FOR RENATA'S PACKAGE
 const LIMITS = {
@@ -121,24 +121,10 @@ function updateFeaturedPhoto() {
     const featuredImage = document.getElementById('featuredPhotoImage');
     const featuredNumber = document.getElementById('featuredPhotoNumber');
 
-    // Find photo marked for ampliacion
-    let ampliacionPhotoIndex = null;
-    for (let i = 0; i < photos.length; i++) {
-        const selection = photoSelections[i];
-        if (selection && selection.ampliacion) {
-            ampliacionPhotoIndex = i;
-            break;
-        }
-    }
-
-    // Show or hide featured section based on whether there's an ampliacion photo
-    if (ampliacionPhotoIndex !== null) {
-        featuredSection.style.display = 'block';
-        featuredImage.src = photos[ampliacionPhotoIndex];
-        featuredNumber.textContent = `Foto #${ampliacionPhotoIndex + 1}`;
-    } else {
-        featuredSection.style.display = 'none';
-    }
+    // Always show ampliacion.webp as the featured photo
+    featuredSection.style.display = 'block';
+    featuredImage.src = 'images/ampliacion.webp';
+    featuredNumber.textContent = 'Fotografía de Ampliación';
 }
 
 // ========================================
@@ -793,8 +779,8 @@ function addPhotoFeedback() {
         return;
     }
 
-    if (photoNumber < 1 || photoNumber > 87) {
-        showToast('El número de foto debe estar entre 1 y 87', 'error');
+    if (photoNumber < 1 || photoNumber > 88) {
+        showToast('El número de foto debe estar entre 1 y 88', 'error');
         return;
     }
 
