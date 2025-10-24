@@ -108,6 +108,37 @@ function updateStats() {
             impresionCard.classList.remove('exceeded');
         }
     }
+
+    // Update featured photo section
+    updateFeaturedPhoto();
+}
+
+// ========================================
+// FEATURED PHOTO FUNCTIONS
+// ========================================
+function updateFeaturedPhoto() {
+    const featuredSection = document.getElementById('featuredPhotoSection');
+    const featuredImage = document.getElementById('featuredPhotoImage');
+    const featuredNumber = document.getElementById('featuredPhotoNumber');
+
+    // Find photo marked for ampliacion
+    let ampliacionPhotoIndex = null;
+    for (let i = 0; i < photos.length; i++) {
+        const selection = photoSelections[i];
+        if (selection && selection.ampliacion) {
+            ampliacionPhotoIndex = i;
+            break;
+        }
+    }
+
+    // Show or hide featured section based on whether there's an ampliacion photo
+    if (ampliacionPhotoIndex !== null) {
+        featuredSection.style.display = 'block';
+        featuredImage.src = photos[ampliacionPhotoIndex];
+        featuredNumber.textContent = `Foto #${ampliacionPhotoIndex + 1}`;
+    } else {
+        featuredSection.style.display = 'none';
+    }
 }
 
 // ========================================
