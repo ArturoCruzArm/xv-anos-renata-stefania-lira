@@ -1,9 +1,9 @@
 // selector-sb.js — Supabase sync para Foro 7
-// Slug: xv-anos-renata-stefania-lira | Storage key: renata_xv_photo_selections
+// Slug: xv-anos-renata | Storage key: renata_xv_photo_selections
 (function () {
     const SUPABASE_URL  = 'https://nzpujmlienzfetqcgsxz.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56cHVqbWxpZW56ZmV0cWNnc3h6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2ODYzMzYsImV4cCI6MjA5MDI2MjMzNn0.xl3lsb-KYj5tVLKTnzpbsdEGoV9ySnswH4eyRuyEH1s';
-    const EVENTO_SLUG   = 'xv-anos-renata-stefania-lira';
+    const EVENTO_SLUG   = 'xv-anos-renata';
     const SB_KEY        = 'renata_xv_photo_selections';
     const SB_H = { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON, 'Content-Type': 'application/json' };
 
