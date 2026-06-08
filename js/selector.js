@@ -3,6 +3,11 @@
 // ========================================
 // Generate photo paths for 88 photos
 const photos = Array.from({length: 88}, (_, i) => `images/foto${String(i + 1).padStart(4, '0')}.webp`);
+// Thumbnail helper: usa thumb/ en grid para ahorrar RAM en moviles
+function getThumbPath(fullPath) {
+    return fullPath.replace('images/', 'images/thumb/');
+}
+
 
 // LIMITS FOR RENATA'S PACKAGE
 const LIMITS = {
@@ -171,7 +176,7 @@ function renderGallery() {
 
         card.innerHTML = `
             <div class="photo-image-container">
-                <img src="${photo}" alt="Foto ${index + 1}" loading="lazy">
+                <img src="${getThumbPath(photo)}" alt="Foto ${index + 1}" loading="lazy">
             </div>
             <div class="photo-number">Foto ${index + 1}</div>
             ${badgesHTML}
