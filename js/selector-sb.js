@@ -53,6 +53,11 @@
 
             var activeIndices = [];
             var rows = [];
+            var _clockKey = SB_KEY + '_clock';
+            var _clock = 0;
+            try { _clock = Number(localStorage.getItem(_clockKey) || '0'); } catch(e) {}
+            _clock++;
+            try { localStorage.setItem(_clockKey, String(_clock)); } catch(e) {}
             entries.forEach(function(e) {
                 var idx = parseInt(e[0]), sel = e[1];
                 var hasAny = sel.impresion || sel.invitacion || sel.descartada || sel.ampliacion;
@@ -65,7 +70,8 @@
                         invitacion: sel.invitacion || false,
                         descartada: sel.descartada || false,
                         ampliacion: sel.ampliacion || false,
-                        datos: sel
+                        datos: Object.assign({}, sel, {_sync: {clock: _clock, sid: sid}}),
+                        code_version: 5
                     });
                 }
             });
